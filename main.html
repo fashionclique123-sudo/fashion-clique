@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fashion Clique</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Base styles */
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background: #121212;
+  color: #fff;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: #1f1f1f;
+  flex-wrap: wrap;
+}
+#logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#logo-container img {
+  height: 40px;
+  border-radius: 5px;
+}
+#logo-container h1 {
+  color: #4caf50;
+  margin: 0;
+  font-size: 22px;
+}
+#right-icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+#right-icons button {
+  padding: 6px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+#adminLoginBtn { background: #4caf50; color: #fff; }
+#themeSwitch { background: #333; color: #fff; }
+#categoryDropdown {
+  width: 100%;
+  margin: 10px 0;
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+  background: #2c2c2c;
+  color: #fff;
+  font-size: 16px;
+}
+
+/* Marquee */
+.marquee-offers {
+  background: #222;
+  color: #4caf50;
+  padding: 5px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee-offers span {
+  display: inline-block;
+  padding-right: 50px;
+  animation: marquee 15s linear infinite;
+}
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Products */
+.container {
+  padding: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+}
+.card {
+  background: #1f1f1f;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  transition: transform 0.2s;
+}
+.card:hover { transform: scale(1.05); }
+.card img { width: 100%; border-radius: 10px; cursor: pointer; }
+.card h3, .card h4 { margin: 5px 0; }
+.card button {
+  padding: 6px 10px;
+  background: #4caf50;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.card button:hover { background: #45a049; }
+
+/* Order form */
+#orderForm {
+  display: none;
+  position: fixed;
+  top:0; left:0;
+  width: 100%; height:100%;
+  background: rgba(0,0,0,0.9);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+#orderForm form {
+  background: #1f1f1f;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+}
+#closeForm {
+  position: absolute;
+  top: 10px; right: 15px;
+  cursor: pointer;
+  color: #f44336;
+  font-weight: bold;
+  font-size: 18px;
+}
+form input, form select {
+  width: 100%;
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 5px;
+  border: none;
+  background: #2c2c2c;
+  color: #fff;
+}
+
+/* Rating */
+#ratingSection { margin-top: 10px; }
+.rating-star {
+  cursor: pointer;
+  font-size: 22px;
+  color: #888;
+  margin-right: 5px;
+}
+.rating-star.selected { color: #4caf50; }
+
+/* Light Theme */
+.light-theme {
+  background: #fff;
+  color: #000;
+}
+.light-theme input, .light-theme select {
+  background: #eee;
+  color: #000;
+}
+.light-theme #categoryDropdown {
+  background: #ddd;
+  color: #000;
+}
+.light-theme .marquee-offers {
+  background: #ccc;
+  color: #4caf50;
+}
+.light-theme .card {
+  background: #eee;
+  color: #000;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  header { flex-direction: column; align-items: flex-start; }
+  #logo-container h1 { font-size: 20px; }
+  #right-icons { flex-direction: row; gap: 10px; align-self: flex-end; margin-top:5px;}
+  .container { grid-template-columns: 1fr; }
+  #categoryDropdown { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div id="logo-container">
+    <img id="siteLogo" src="logo.png" alt="Logo">
+    <h1>Fashion Clique</h1>
+  </div>
+  <div id="right-icons">
+    <button id="adminLoginBtn">🛠 Admin</button>
+    <button id="themeSwitch">🌙/☀️</button>
+  </div>
+</header>
+
+<select id="categoryDropdown">
+  <option value="All">All</option>
+</select>
+
+<div class="marquee-offers">
+  <span id="offerText">Welcome to Fashion Clique! Big Offers Await!</span>
+</div>
+
+<div class="container" id="productContainer"></div>
+
+<!-- Order Form -->
+<div id="orderForm">
+<form onsubmit="submitOrder(event)">
+<span id="closeForm" onclick="closeForm()">X</span>
+<h2>Place Order</h2>
+<input type="text" id="cName" placeholder="Your Name" required>
+<input type="tel" id="cPhone" placeholder="Phone Number" required>
+<input type="text" id="cAddress" placeholder="Address" required>
+<input type="text" id="oProduct" placeholder="Product" readonly>
+<select id="oSize" required>
+  <option value="">Select Size</option>
+  <option value="S">S</option>
+  <option value="M">M</option>
+  <option value="L">L</option>
+  <option value="XL">XL</option>
+</select>
+<select id="oColor" required>
+  <option value="">Select Color</option>
+  <option value="Black">Black</option>
+  <option value="White">White</option>
+  <option value="Red">Red</option>
+  <option value="Blue">Blue</option>
+</select>
+<input type="number" id="oQty" placeholder="Quantity" value="1" min="1" required>
+<select id="oPayment" required>
+  <option value="">Select Payment</option>
+  <option value="COD">Cash On Delivery (+₹200)</option>
+  <option value="UPI">UPI</option>
+  <option value="WhatsApp">WhatsApp Order</option>
+</select>
+<button type="submit">Submit Order</button>
+</form>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// Firebase
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "fashion-clique.firebaseapp.com",
+  databaseURL: "https://fashion-clique-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "fashion-clique",
+  storageBucket: "fashion-clique.firebasestorage.app",
+  messagingSenderId: "136880158986",
+  appId: "1:136880158986:web:cd0cd16849979ebf68a2f3",
+  measurementId: "G-G938C4R8TV"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Categories
+let categories = ["Shoes","Shirts","Pants","Clothes","Combo","Watches","Gadgets","Footwear"];
+const categoryDropdown = document.getElementById('categoryDropdown');
+categories.forEach(cat => {
+  let opt = document.createElement('option'); opt.value = cat; opt.text = cat;
+  categoryDropdown.add(opt);
+});
+
+// Products
+let productContainer = document.getElementById('productContainer');
+function displayProducts(filter="All"){
+  let searchTerm = document.getElementById('searchInput')?.value?.toLowerCase() || "";
+  productContainer.innerHTML="";
+  db.ref("products").once("value",snapshot=>{
+    snapshot.forEach(child=>{
+      let p = child.val();
+      if((filter=="All" || p.category==filter) && (!searchTerm || p.name.toLowerCase().includes(searchTerm))){
+        let card = document.createElement('div');
+        card.className="card";
+        card.innerHTML=`<img src="${p.image.split(',')[0]}" onclick="zoomImage('${p.image.split(',')[0]}')">
+          <h3>${p.name}</h3><h4>₹${p.price}</h4>
+          <button onclick="openForm('${p.name}')">Order</button>`;
+        productContainer.appendChild(card);
+      }
+    });
+  });
+}
+displayProducts();
+categoryDropdown.onchange = ()=>displayProducts(categoryDropdown.value);
+
+// Zoom image
+function zoomImage(src){let imgWin=window.open("");imgWin.document.write(`<img src="${src}" style="width:100%">`);}
+
+// Order form
+let orderProduct="";
+function openForm(name){orderProduct=name;document.getElementById('oProduct').value=name;document.getElementById('orderForm').style.display="flex";}
+function closeForm(){document.getElementById('orderForm').style.display="none";}
+function submitOrder(e){
+  e.preventDefault();
+  let cName=document.getElementById('cName').value;
+  let cPhone=document.getElementById('cPhone').value;
+  let cAddress=document.getElementById('cAddress').value;
+  let oSize=document.getElementById('oSize').value;
+  let oColor=document.getElementById('oColor').value;
+  let oQty=document.getElementById('oQty').value;
+  let oPayment=document.getElementById('oPayment').value;
+  let total="₹"+(parseInt(oQty)*200);
+  let message=`*Order Received*\nName: ${cName}\nPhone: ${cPhone}\nAddress: ${cAddress}\nProduct: ${orderProduct}\nSize: ${oSize}\nColor: ${oColor}\nQuantity: ${oQty}\nPayment: ${oPayment}\nTotal: ${total}`;
+  window.open(`https://wa.me/917594849347?text=${encodeURIComponent(message)}`,"_blank");
+  closeForm();
+}
+
+// Theme toggle
+document.getElementById('themeSwitch').onclick = () => {
+  document.body.classList.toggle('light-theme');
+};
+</script>
+</body>
+</html>
