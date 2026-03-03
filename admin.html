@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Fashion Clique</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background: #121212;
+  color: #fff;
+}
+.container {
+  padding: 15px;
+  max-width: 500px;
+  margin: auto;
+}
+h2, h3 {
+  margin: 10px 0;
+  text-align: center;
+}
+input, select, button {
+  width: 100%;
+  padding: 12px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+button {
+  cursor: pointer;
+  background: #4caf50;
+  color: #fff;
+  font-weight: bold;
+}
+button:hover {
+  background: #45a049;
+}
+#profitSummary {
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+.light-theme {
+  background: #fff;
+  color: #000;
+}
+.light-theme input, .light-theme select {
+  background: #eee;
+  color: #000;
+}
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+  input, select, button {
+    padding: 10px;
+    font-size: 14px;
+  }
+  h2, h3 {
+    font-size: 18px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Admin Login</h2>
+  <input type="password" id="adminPass" placeholder="Enter password">
+  <button onclick="adminLogin()">Login</button>
+
+  <div id="adminActions" style="display:none;">
+    <h3>Add Product</h3>
+    <input type="text" id="pName" placeholder="Product Name">
+    <input type="number" id="pPrice" placeholder="Selling Price ₹">
+    <input type="number" id="pCost" placeholder="Cost Price ₹">
+    <input type="text" id="pCategory" placeholder="Category">
+    <input type="text" id="pImage" placeholder="Image URL (comma separated)">
+    <select id="pType">
+      <option value="single">Single</option>
+      <option value="combo">Combo</option>
+    </select>
+    <button onclick="addProduct()">Add Product</button>
+
+    <h3>Offers</h3>
+    <input type="text" id="offerInput" placeholder="Enter new offer">
+    <button onclick="updateOffer()">Update Marquee</button>
+
+    <h3>Upload Logo</h3>
+    <input type="text" id="logoInput" placeholder="Logo Image URL">
+    <button onclick="updateLogo()">Update Logo</button>
+
+    <h3>Expenses & Profit</h3>
+    <input type="number" id="expenseInput" placeholder="Add Expense ₹">
+    <button onclick="addExpense()">Add Expense</button>
+    <div id="profitSummary">Net Profit: ₹0</div>
+
+    <h3>Logout</h3>
+    <button onclick="logoutAdmin()">Logout</button>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// Firebase
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "fashion-clique.firebaseapp.com",
+  databaseURL: "https://fashion-clique-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "fashion-clique",
+  storageBucket: "fashion-clique.firebasestorage.app",
+  messagingSenderId: "136880158986",
+  appId: "1:136880158986:web:cd0cd16849979ebf68a2f3",
+  measurementId: "G-G938C4R8TV"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Admin login
+function adminLogin(){
+  let pass = document.getElementById('adminPass').value;
+  if(pass=="fc@123"){
+    document.getElementById('adminActions').style.display="block";
+    alert("Admin logged in");
+  } else alert("Wrong password");
+}
+function logoutAdmin(){
+  document.getElementById('adminActions').style.display="none";
+  document.getElementById('adminPass').value="";
+}
+
+// Add product
+function addProduct(){
+  let name=document.getElementById('pName').value;
+  let price=parseInt(document.getElementById('pPrice').value);
+  let cost=parseInt(document.getElementById('pCost').value);
+  let category=document.getElementById('pCategory').value;
+  let image=document.getElementById('pImage').value;
+  let type=document.getElementById('pType').value;
+  if(name && price && category && image){
+    let newProdRef=db.ref("products").push();
+    newProdRef.set({name,price,cost,category,image,type});
+    alert("Product added");
+    document.getElementById('pName').value="";
+    document.getElementById('pPrice').value="";
+    document.getElementById('pCost').value="";
+    document.getElementById('pCategory').value="";
+    document.getElementById('pImage').value="";
+  } else alert("Fill all fields");
+}
+
+// Offers
+function updateOffer(){
+  let offer=document.getElementById('offerInput').value;
+  if(offer){
+    localStorage.setItem('offerText', offer);
+    document.getElementById('offerInput').value="";
+    alert("Offer updated (shows on main.html via localStorage)");
+  }
+}
+
+// Logo
+function updateLogo(){
+  let url=document.getElementById('logoInput').value;
+  if(url){localStorage.setItem('siteLogo',url);document.getElementById('logoInput').value=""; alert("Logo updated");}
+}
+
+// Profit / Expenses
+let totalProfit=0, totalExpenses=0;
+function addExpense(){
+  let exp=parseInt(document.getElementById('expenseInput').value);
+  if(exp){totalExpenses+=exp;updateProfit();document.getElementById('expenseInput').value="";}
+}
+function updateProfit(){
+  db.ref("products").once("value",snapshot=>{
+    totalProfit=0;
+    snapshot.forEach(child=>{
+      let p=child.val();
+      totalProfit += (p.price - (p.cost || 0));
+    });
+    let net=totalProfit-totalExpenses;
+    let el=document.getElementById('profitSummary');
+    el.innerText="Net Profit: ₹"+net;
+    el.style.color = net>=0?"#4caf50":"#f44336";
+  });
+}
+updateProfit();
+</script>
+</body>
+  </html>
